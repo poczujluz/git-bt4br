@@ -1,0 +1,85 @@
+---
+title: "Assigment 7"
+author: "Paula Konowalska"
+format: 
+  html:
+    toc: true
+    code-fold: true 
+    self-contained: true 
+editor: visual
+---
+
+```{r 1}
+library(tidyr)
+library(dplyr)
+library(readr)
+```
+
+## Task 1:
+
+In first cell I load "iris" dataset. It was hard to find it because my first thought was to search pegaz and all previous assigments to find it. It wass very time consuming.
+
+```{r 2}
+knitr::opts_chunk$set(echo = TRUE)
+library(rmarkdown)
+data("iris")
+paged_table(iris)
+```
+
+I used pivot_longer() function to transform dataset to have 3 columns named Species \| Trait \| Size.
+
+```{r 3}
+iris_long <- iris %>%
+  pivot_longer(
+    cols = where(is.numeric),
+    names_to = "Trait",
+    values_to = "Size"
+  )
+  head(iris_long)
+```
+
+## Task 2:
+
+I calculated mean length and width of petal and sepal for each species using group_by(), mean() and summarise() functions.
+
+```{r 4}
+mean_values <- iris %>% 
+  group_by(Species) %>%
+    summarise(
+      mean_petal_length = mean(Petal.Length),
+      mean_petal_width = mean(Petal.Width),
+      mean_sepal_length = mean(Sepal.Length),
+      mean_sepal_width = mean(Sepal.Width)
+    )
+paged_table(mean_values)
+```
+
+I did similar thing to calculate largest and widest petals and septal of virginica and versicolor species. I used max() function to find maximum values, and then filtered my dataset to find only the species of interest.
+
+```{r 5}
+max_values <- iris %>% 
+  group_by(Species) %>%
+    summarise(
+      largest_petal = max(Petal.Length),
+      widest_petal = max(Petal.Width),
+      largest_sepal = max(Sepal.Length),
+      widest_sepal = max(Sepal.Width)
+    ) %>%
+      filter(Species %in% c("virginica","versicolor"))
+paged_table(max_values)
+```
+
+In this cell, I first added as additional columns the previously calculated means of all measurements for each species (I used left_join() function). Then I grouped the data by species using group_by() function. The next step was to use the summarize() and sum() functions to count the rows in each group where the measured value is greater than the mean.
+
+```{r }
+above_mean_counted <- iris %>% 
+  left_join(mean_values, by="Species") %>%
+  group_by(Species) %>%
+  summarise(
+    petal_length_above_mean = sum(Petal.Length > mean_petal_length),
+    petal_width_above_mean = sum(Petal.Width > mean_petal_width),
+    sepal_length_above_mean = sum(Sepal.Length > mean_sepal_length),
+    sepal_width_above_mean = sum(Sepal.Width > mean_sepal_width)
+  )
+paged_table(above_mean_counted)
+```
